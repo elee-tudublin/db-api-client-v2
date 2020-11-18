@@ -67,29 +67,39 @@ function displayProducts(products) {
 } // end function
 
 
-// load and display categories in a bootstrap list group
+// load and display categories in thhe left menu
 function displayCategories(categories) {
   //console.log(categories);
-  const items = categories.map(category => {
+
+  // use Array.map() to iterate through the list of categories
+  // Returns an HTML link for each category in the array
+  const catLinks = categories.map(category => {
+    // The link has an onclick handler which will call updateProductsView(id) pasing the category id as a parameter
     return `<a href="#" class="list-group-item list-group-item-action" onclick="updateProductsView(${category.CategoryId})">${category.CategoryName}</a>`;
   });
 
-  // Add an All categories link at the start
-  items.unshift(`<a href="#" class="list-group-item list-group-item-action" onclick="loadProducts()">Show all</a>`);
+  // use  unshift to add a 'Show all' link at the start of the array of catLinks
+  catLinks.unshift(`<a href="#" class="list-group-item list-group-item-action" onclick="loadProducts()">Show all</a>`);
 
-  // Set the innerHTML of the productRows root element = rows
-  document.getElementById('categoryList').innerHTML = items.join('');
+  // Set the innerHTML of the productRows element = the links contained in catlinks
+  // .join('') converts an array to a string, replacing the , seperator with blank.
+  document.getElementById('categoryList').innerHTML = catLinks.join('');
 
   // Fill select list in product form
+  // first get the select input by its id
   let catSelect = document.getElementById("categoryId");
 
-    // Add default option
-    catSelect.options[catSelect.options.length] = new Option('Choose Category', '0');
+  // Add default option (to the currently empty select)
+  // options[catSelect.options.length] is the last option + 1
+  // an option is made from a name, value pair
+  catSelect.options[catSelect.options.length] = new Option('Choose Category', '0');
 
+  // Add an option for each category
+  // iterate through categories adding each to the end of the options list
+  // each option is made from categoryName, categoryId
   for (i=0; i< categories.length; i++) {
     catSelect.options[catSelect.options.length] = new Option(categories[i].CategoryName, categories[i].CategoryId);
   }
-
 
 } // end function
 
@@ -99,10 +109,14 @@ function displayCategories(categories) {
 async function loadProducts() {
   try {
     
+    // Get a list of categories via the getDataAsync(url) function
     const categories = await getDataAsync(`${BASE_URL}/category`);
+    // Call displaycategoriess(), passing the retrieved categories list
     displayCategories(categories);
 
+    // Get a list of products
     const products = await getDataAsync(`${BASE_URL}/product`);
+    // Call displayProducts(), passing the retrieved products list
     displayProducts(products);
 
   } // catch and log any errors
@@ -114,7 +128,9 @@ async function loadProducts() {
 // update products list when category is selected to show only products from that category
 async function updateProductsView(id) {
   try {
+    // call the API enpoint which retrieves products by category (id)
     const products = await getDataAsync(`${BASE_URL}/product/bycat/${id}`);
+    // Display the list of products returned by the API
     displayProducts(products);
 
   } // catch and log any errors
@@ -122,39 +138,58 @@ async function updateProductsView(id) {
     console.log(err);
   }
 }
- 
-// Add a new product
+
+
+// Get form data and return as json ready for POST
+function getProductForm() {
+
+  // Get form fields
+  const pId = document.getElementById('productId').value;
+  const catId = document.getElementById('categoryId').value;
+  const pName = document.getElementById('productName').value;
+  const pDesc = document.getElementById('productDescription').value;
+  const pStock = document.getElementById('productStock').value;
+  const pPrice = document.getElementById('productPrice').value;
+
+  // build request body for post
+  // JSON.stringify converts the object to json
+  // required for sending to the API
+  const productJson = JSON.stringify({
+  productId: pId,
+  categoryId: catId,
+  productName: pName,
+  productDescription: pDesc,
+  productStock: pStock,
+  productPrice: pPrice
+  });
+
+  // return the body data
+  return productJson;
+}
+
+// Add a new product - called by form submit
+// get the form data and send request to the API
 async function addProduct() {
   // url for api call
   const url = `${BASE_URL}/product`
-
+  // get new product data as json (the request body)
+  const reqBodyJson = getProductForm();
   
-  // https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData
-  // Get form + data
-  const productForm = document.getElementById("productForm");
-  const formData = new FormData(productForm);
-
-  // https://stackoverflow.com/questions/41431322/how-to-convert-formdatahtml5-object-to-json
-  // Get form fields + values
-  let newProduct = {};
-  formData.forEach((value, key) => newProduct[key] = value);
-
-  // create request object
+  // build the request object - note: POST
+  // reqBodyJson added to the req body
   const request = {
       method: 'POST',
       headers: HTTP_REQ_HEADERS,
       // credentials: 'include',
       mode: 'cors',
-      body: JSON.stringify(newProduct)
+      body: reqBodyJson
     };
 
   // Try catch 
   try {
     // Call fetch and await the respose
-    // Initally returns a promise
+    // fetch url using request object
     const response = await fetch(url, request);
-
-    // As Resonse is dependant on fetch, await must also be used here
     const json = await response.json();
 
     // Output result to console (for testing purposes) 
@@ -165,33 +200,29 @@ async function addProduct() {
     console.log(err);
     return err;
   }
-
   // Refresh products list
   loadProducts();
 }
 
+
+// Alternative for getting for data
+function getProductFormAlt() {
+
+  // https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData
+  // Get form + data
+  const productForm = document.getElementById("productForm");
+  const formData = new FormData(productForm);
+
+  // https://stackoverflow.com/questions/41431322/how-to-convert-formdatahtml5-object-to-json
+  // Get form fields + values
+  let newProduct = {};
+  formData.forEach((value, key) => newProduct[key] = value);
+
+  // return product json
+  return JSON.stringify(newProduct);
+}
+
+
+
 // When this script is loaded, call loadProducts() to add products to the page
 loadProducts();
-
-
-
-/* Get form fields and build json - alternative method
-
-    // Get form fields
-    const pId = Number(document.getElementById('productId').value);
-    const catId = document.getElementById('categoryId').value;
-    const pName = document.getElementById('productName').value;
-    const pDesc = document.getElementById('productDescription').value;
-    const pStock = document.getElementById('productStock').value;
-    const pPrice = document.getElementById('productPrice').value;
-
-    // build request body
-    const reqBody = JSON.stringify({
-    categoryId: catId,
-    productName: pName,
-    productDescription: pDesc,
-    productStock: pStock,
-    productPrice: pPrice
-    });
-
-*/
