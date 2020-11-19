@@ -71,6 +71,8 @@ function displayProducts(products) {
 function displayCategories(categories) {
   //console.log(categories);
 
+  // Cat menu
+
   // use Array.map() to iterate through the list of categories
   // Returns an HTML link for each category in the array
   const catLinks = categories.map(category => {
@@ -86,8 +88,9 @@ function displayCategories(categories) {
   document.getElementById('categoryList').innerHTML = catLinks.join('');
 
   // Fill select list in product form
+
   // first get the select input by its id
-  let catSelect = document.getElementById("categoryId");
+  let catSelect = document.getElementById("CategoryId");
 
   // Add default option (to the currently empty select)
   // options[catSelect.options.length] is the last option + 1
@@ -144,23 +147,23 @@ async function updateProductsView(id) {
 function getProductForm() {
 
   // Get form fields
-  const pId = document.getElementById('productId').value;
-  const catId = document.getElementById('categoryId').value;
-  const pName = document.getElementById('productName').value;
-  const pDesc = document.getElementById('productDescription').value;
-  const pStock = document.getElementById('productStock').value;
-  const pPrice = document.getElementById('productPrice').value;
+  const pId = document.getElementById('ProductId').value;
+  const catId = document.getElementById('CategoryId').value;
+  const pName = document.getElementById('ProductName').value;
+  const pDesc = document.getElementById('ProductDescription').value;
+  const pStock = document.getElementById('ProductStock').value;
+  const pPrice = document.getElementById('ProductPrice').value;
 
   // build request body for post
   // JSON.stringify converts the object to json
   // required for sending to the API
   const productJson = JSON.stringify({
-  productId: pId,
-  categoryId: catId,
-  productName: pName,
-  productDescription: pDesc,
-  productStock: pStock,
-  productPrice: pPrice
+  ProductId: pId,
+  CategoryId: catId,
+  ProductName: pName,
+  ProductDescription: pDesc,
+  ProductStock: pStock,
+  ProductPrice: pPrice
   });
 
   // return the body data
@@ -206,9 +209,10 @@ async function addProduct() {
 
 
 // Alternative for getting for data
+// used formData object
+// https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData
 function getProductFormAlt() {
 
-  // https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData
   // Get form + data
   const productForm = document.getElementById("productForm");
   const formData = new FormData(productForm);
