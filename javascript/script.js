@@ -87,8 +87,7 @@ function displayCategories(categories) {
   // .join('') converts an array to a string, replacing the , seperator with blank.
   document.getElementById('categoryList').innerHTML = catLinks.join('');
 
-  // Fill select list in product form
-
+  // *** Fill select list in product form ***
   // first get the select input by its id
   let catSelect = document.getElementById("CategoryId");
 
@@ -144,6 +143,7 @@ async function updateProductsView(id) {
 
 
 // Get form data and return as json ready for POST
+// Uppercase first char to match DB
 function getProductForm() {
 
   // Get form fields
@@ -154,20 +154,18 @@ function getProductForm() {
   const pStock = document.getElementById('ProductStock').value;
   const pPrice = document.getElementById('ProductPrice').value;
 
-  // build request body for post
-  // JSON.stringify converts the object to json
-  // required for sending to the API
-  const productJson = JSON.stringify({
+  // build product object for post
+  const productObj = {
   ProductId: pId,
   CategoryId: catId,
   ProductName: pName,
   ProductDescription: pDesc,
   ProductStock: pStock,
   ProductPrice: pPrice
-  });
+  }
 
   // return the body data
-  return productJson;
+  return productObj;
 }
 
 // Add a new product - called by form submit
@@ -176,7 +174,7 @@ async function addProduct() {
   // url for api call
   const url = `${BASE_URL}/product`
   // get new product data as json (the request body)
-  const reqBodyJson = getProductForm();
+  const productObj = getProductForm();
   
   // build the request object - note: POST
   // reqBodyJson added to the req body
@@ -185,7 +183,7 @@ async function addProduct() {
       headers: HTTP_REQ_HEADERS,
       // credentials: 'include',
       mode: 'cors',
-      body: reqBodyJson
+      body: JSON.stringify(productObj)
     };
 
   // Try catch 
